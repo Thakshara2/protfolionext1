@@ -17,9 +17,9 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-b from-black to-gray-900 text-white">
       <nav className="fixed top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
-          <span className="text-lg font-medium">Content Creator</span>
+          <span className="text-lg font-medium">KIMA STUDIO</span>
           <a 
-            href="https://www.fiverr.com/your_username" 
+            href="https://www.fiverr.com/kima_studio" 
             target="_blank" 
             rel="noopener noreferrer"
             className="rounded-full bg-[#1DBF73] px-4 py-2 text-sm font-medium text-white hover:bg-[#19a463] transition-colors"
@@ -40,13 +40,13 @@ export default function Home() {
             </span>
           </div>
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl bg-gradient-to-r from-white via-gray-300 to-gray-500 bg-clip-text text-transparent">
-            Short-Form Video Creator
+            Monetizable Short-Form Videos
             <br />
-            For Your Brand
+            That Generate $10K+ Monthly
           </h1>
           <p className="mx-auto max-w-2xl text-lg text-gray-400">
-            Specializing in viral short-form content across TikTok and YouTube Shorts.
-            Over 1M+ combined views and growing audience engagement.
+            Professional short-form content optimized for TikTok Creativity Program and YouTube Shorts monetization. 
+            Featuring AI voice cloning, original gameplay footage, custom transitions, and viral storytelling formats.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export default function Home() {
       <footer className="border-t border-white/10 bg-black/50 py-12">
         <div className="mx-auto max-w-7xl px-4 text-center">
           <p className="text-sm text-gray-400">
-            Professional Short-Form Video Creator on Fiverr
+            KIMA STUDIO - Professional Short-Form Video Creator on Fiverr
           </p>
         </div>
       </footer>
