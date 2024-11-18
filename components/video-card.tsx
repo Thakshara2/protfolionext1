@@ -16,7 +16,7 @@ interface VideoCardProps {
 const VideoCard: FC<VideoCardProps> = ({ video }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [videoSrc, setVideoSrc] = useState<string>(video.videoUrl);
@@ -29,15 +29,50 @@ const VideoCard: FC<VideoCardProps> = ({ video }) => {
 
   // Detect mobile device
   useEffect(() => {
-    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+    const checkMobile = () => {
+      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Intersection Observer for autoplay
+  // Handle hover state for desktop
+  const handleMouseEnter = () => {
+    if (!isMobile) {
+      setIsHovered(true);
+      setShowControls(true);
+      if (videoRef.current) {
+        videoRef.current.play()
+          .then(() => setIsPlaying(true))
+          .catch(error => {
+            console.log("Hover play failed:", error);
+          });
+      }
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobile) {
+      setIsHovered(false);
+      setShowControls(false);
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+        setIsPlaying(false);
+      }
+    }
+  };
+
+  // Intersection Observer for mobile autoplay
   useEffect(() => {
+    if (!isMobile) return;
+
     const options = {
       root: null,
       rootMargin: '0px',
-      threshold: isMobile ? 0.6 : 0.5,
+      threshold: 0.6,
     };
 
     const observer = new IntersectionObserver((entries) => {
@@ -45,28 +80,26 @@ const VideoCard: FC<VideoCardProps> = ({ video }) => {
         if (!videoRef.current) return;
 
         if (entry.isIntersecting) {
-          // Video is in view
           const playPromise = videoRef.current.play();
           if (playPromise !== undefined) {
             playPromise
               .then(() => {
                 setIsPlaying(true);
-                // Start video from beginning when coming into view
                 videoRef.current!.currentTime = 0;
               })
               .catch(error => {
-                if (error.name === "NotAllowedError" && !isMuted) {
-                  // If autoplay is blocked, mute and try again
-                  setIsMuted(true);
+                console.log("Mobile autoplay failed:", error);
+                // For mobile, we keep it muted if autoplay fails
+                if (error.name === "NotAllowedError") {
                   videoRef.current!.muted = true;
+                  setIsMuted(true);
                   videoRef.current!.play()
                     .then(() => setIsPlaying(true))
-                    .catch(e => console.log("Autoplay failed even when muted:", e));
+                    .catch(e => console.log("Muted autoplay failed:", e));
                 }
               });
           }
         } else {
-          // Video is out of view
           videoRef.current.pause();
           setIsPlaying(false);
         }
@@ -78,10 +111,37 @@ const VideoCard: FC<VideoCardProps> = ({ video }) => {
     }
 
     return () => observer.disconnect();
-  }, [isMobile, isMuted]);
+  }, [isMobile]);
 
-  // Touch event handlers for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // Handle video click/tap
+  const togglePlayPause = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+
+    if (isPlaying) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch(error => {
+            console.log("Play failed:", error);
+            if (isMobile && error.name === "NotAllowedError") {
+              setIsMuted(true);
+              videoRef.current!.muted = true;
+              videoRef.current!.play()
+                .then(() => setIsPlaying(true))
+                .catch(e => console.log("Muted play failed:", e));
+            }
+          });
+      }
+    }
+  };
+
+  // Mobile touch handlers
+  const handleTouchStart = () => {
     if (isMobile) {
       setShowControls(true);
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -96,30 +156,14 @@ const VideoCard: FC<VideoCardProps> = ({ video }) => {
     }
   };
 
-  const togglePlayPause = (e: React.MouseEvent | React.TouchEvent) => {
-    e.stopPropagation();
-    if (!videoRef.current) return;
-
-    if (isPlaying) {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => setIsPlaying(true))
-          .catch(error => {
-            if (error.name === "NotAllowedError" && !isMuted) {
-              setIsMuted(true);
-              videoRef.current!.muted = true;
-              videoRef.current!.play()
-                .then(() => setIsPlaying(true))
-                .catch(e => console.log("Playback failed even when muted:", e));
-            }
-          });
+  // Clean up
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
-    }
-  };
+    };
+  }, []);
 
   return (
     <motion.div 
@@ -130,6 +174,8 @@ const VideoCard: FC<VideoCardProps> = ({ video }) => {
       transition={{ duration: 0.3 }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       className="relative w-full max-w-md mx-auto group"
     >
       <Card className="relative overflow-hidden rounded-2xl border-white/10 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm transition-all duration-300 group-hover:border-white/20 group-hover:shadow-2xl">
