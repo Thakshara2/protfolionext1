@@ -178,7 +178,9 @@ const VideoCard: FC<VideoCardProps> = ({ video }) => {
       onMouseLeave={handleMouseLeave}
       className="relative w-full max-w-md mx-auto group"
     >
-      <Card className="relative overflow-hidden rounded-2xl border-white/10 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm transition-all duration-300 group-hover:border-white/20 group-hover:shadow-2xl">
+      <Card 
+        className="group relative overflow-hidden rounded-xl border-white/10 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm transition-all duration-300 group-hover:border-white/20 group-hover:shadow-2xl"
+      >
         <AspectRatio ratio={9/16}>
           {/* Gradient Overlays */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
@@ -270,21 +272,23 @@ const VideoCard: FC<VideoCardProps> = ({ video }) => {
                   </motion.button>
                 </div>
 
-                {/* Center Play Button */}
-                <motion.button
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={togglePlayPause}
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20 p-4 backdrop-blur-md transition-all hover:bg-white/30"
-                >
-                  {isPlaying ? (
-                    <Pause className="h-6 w-6 text-white" />
-                  ) : (
-                    <Play className="h-6 w-6 text-white" />
-                  )}
-                </motion.button>
+                {/* Fixed Play/Pause Button Positioning */}
+                <div className="absolute inset-0 flex items-center justify-center z-20">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={togglePlayPause}
+                    className={`rounded-full bg-white/20 p-3 backdrop-blur-sm transition-opacity duration-300 hover:bg-white/30 ${
+                      isHovered ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
+                    {isPlaying ? (
+                      <Pause className="h-6 w-6 text-white" />
+                    ) : (
+                      <Play className="h-6 w-6 text-white" />
+                    )}
+                  </motion.button>
+                </div>
 
                 {/* Bottom Controls */}
                 <motion.div 
