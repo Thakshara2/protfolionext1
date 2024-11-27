@@ -12,7 +12,7 @@ interface NavigationProps {
 }
 
 export default function Navigation({ categories }: NavigationProps) {
-  const scrollToCategory = (id: string) => {
+  const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
@@ -23,7 +23,7 @@ export default function Navigation({ categories }: NavigationProps) {
           key={category.id}
           variant="ghost"
           className="rounded-full border border-white/10 hover:bg-white/5"
-          onClick={() => scrollToCategory(category.id)}
+          onClick={() => scrollToSection(category.id)}
         >
           {category.label}
         </Button>

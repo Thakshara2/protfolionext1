@@ -6,6 +6,7 @@ export interface Video {
   id: string;
   title: string;
   videoUrl: string;
+  thumbnail: string;
   views: string;
   likes: string;
   category: string;
@@ -52,14 +53,10 @@ export function useVideos(category: string) {
           }
         }
         
-        console.log(`Checking folder: ${folderPath}`);
-        
         // Get all video files
         const videoFiles = result.items.filter(item => 
           item.name.toLowerCase().match(/\.(mp4|mov|avi|mkv|webm)$/i)
         );
-
-        console.log(`Found ${videoFiles.length} video files in ${folderPath}`);
 
         const videosData = await Promise.all(
           videoFiles.map(async (fileRef: StorageReference) => {
@@ -77,6 +74,11 @@ export function useVideos(category: string) {
                 return num.toString();
               };
 
+              // Generate thumbnail URL from video URL
+              // For Firebase Storage URLs, we'll use the video URL as the thumbnail
+              // In a production environment, you should generate and store actual thumbnails
+              const thumbnail = videoUrl;
+
               return {
                 id: fileRef.name,
                 title: metadata.customMetadata?.title || 
@@ -86,6 +88,7 @@ export function useVideos(category: string) {
                                  .replace(/tiktok textcube/gi, '')
                                  .trim(),
                 videoUrl,
+                thumbnail,
                 views: formatNumber(viewCount),
                 likes: formatNumber(likeCount),
                 category
@@ -108,7 +111,6 @@ export function useVideos(category: string) {
             return bViews - aViews;
           });
 
-        console.log(`Successfully loaded ${validVideos.length} videos for category: ${category}`);
         setVideos(validVideos);
         setError(null);
       } catch (err) {
